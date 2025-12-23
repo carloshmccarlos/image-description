@@ -2,7 +2,7 @@
 
 import { updateUserPreferences } from '@/actions/user'
 import { ArrowRight, Languages, Check } from 'lucide-react'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 const LANGUAGES = [
@@ -12,7 +12,7 @@ const LANGUAGES = [
     { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
 ]
 
-export default function OnboardingPage() {
+function OnboardingContent() {
     const searchParams = useSearchParams()
     const returnTo = searchParams.get('returnTo') || '/'
     const [nativeLang, setNativeLang] = useState('')
@@ -175,5 +175,13 @@ export default function OnboardingPage() {
                 </form>
             </div>
         </div>
+    )
+}
+
+export default function OnboardingPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <OnboardingContent />
+        </Suspense>
     )
 }
