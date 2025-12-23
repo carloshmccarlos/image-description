@@ -1,65 +1,77 @@
-import Image from "next/image";
+import Link from 'next/link'
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className='flex flex-col items-center'>
+      <section className='py-20 px-6 text-center max-w-5xl mx-auto'>
+        <div className='inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase bg-primary/10 text-primary rounded-full'>
+          AI-Powered Visual Learning
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <h1 className='text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1] text-slate-900'>
+          Master Any Language <br />
+          <span className='text-primary'>Visual Context</span>
+        </h1>
+        <p className='text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed'>
+          LexiLens uses advanced AI to transform any image into a personalized language lesson.
+          Upload a photo, explore vocabulary, and master descriptions in your target language.
+        </p>
+        <div className='flex flex-wrap gap-4 justify-center'>
+          <Link
+            href='/analyze'
+            className='bg-primary text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95'
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            Get Started Free
+          </Link>
+          <button className='bg-white border border-slate-200 text-slate-900 px-10 py-4 rounded-full text-lg font-bold hover:bg-slate-50 transition-all'>
+            How it Works
+          </button>
+        </div>
+      </section>
+
+      <div className='w-full max-w-6xl px-6 pb-32'>
+        <div className='relative group'>
+          <div className='absolute -inset-1 bg-gradient-to-r from-primary to-indigo-400 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200'></div>
+          <div className='relative bg-white rounded-[2rem] p-3 shadow-2xl border border-slate-100 overflow-hidden'>
+            <img
+              src='https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop'
+              alt='Hero Preview'
+              className='w-full rounded-[1.5rem]'
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
+      </div>
+
+      <section className='w-full bg-slate-50 py-24'>
+        <div className='max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-12'>
+          <FeatureCard
+            icon='📸'
+            title='Visual Context'
+            description='Learn words as they appear in the real world, making them easier to remember.'
+          />
+          <FeatureCard
+            icon='🤖'
+            title='AI Descriptions'
+            description='Get natural-sounding descriptions at various difficulty levels (A1 to C1).'
+          />
+          <FeatureCard
+            icon='🌍'
+            title='Dynamic Translation'
+            description='Learn in your native language with instant bridges to your target language.'
+          />
+        </div>
+      </section>
     </div>
-  );
+  )
+}
+
+function FeatureCard({ icon, title, description }: { icon: string, title: string, description: string }) {
+  return (
+    <div className='flex flex-col items-center text-center'>
+      <div className='w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm mb-6 border border-slate-100'>
+        {icon}
+      </div>
+      <h3 className='text-xl font-bold mb-3 text-slate-900'>{title}</h3>
+      <p className='text-slate-600 leading-relaxed'>{description}</p>
+    </div>
+  )
 }

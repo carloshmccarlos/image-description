@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLens — Master English Through Vision</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Palette */
+            --bg: #ffffff;
+            --bg-subtle: #f9fafb;
+            --surface: #ffffff;
+            --border: #f1f5f9;
+            --border-strong: #e2e8f0;
+            --primary: #6366f1;
+            --primary-light: #eef2ff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-on-primary: #ffffff;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+            /* Spacing & Radius */
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* --- Global Components --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+            opacity: 0.95;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--text-main);
+            border-color: var(--border-strong);
+        }
+
+        .btn-white:hover {
+            background: var(--bg-subtle);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-main);
+            background: var(--bg-subtle);
+        }
+
+        /* --- Navigation --- */
+        nav {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.04em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        /* --- Landing Section --- */
+        #landing-view {
+            display: block;
+        }
+
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(to right, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .hero-preview {
+            margin-top: 5rem;
+            position: relative;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .preview-card {
+            background: white;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .preview-img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            display: block;
+        }
+
+        /* --- Main App UI Section --- */
+        #app-view {
+            display: none;
+            background-color: var(--bg-subtle);
+            min-height: calc(100vh - 80px);
+            padding: 3rem 0;
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        /* App Components */
+        .upload-zone {
+            background: white;
+            border: 2px dashed var(--border-strong);
+            border-radius: var(--radius-xl);
+            padding: 5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .result-stage {
+            display: none;
+            /* Initially hidden */
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .main-image-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .main-image-card img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            display: block;
+            aspect-ratio: 16/10;
+            object-fit: cover;
+        }
+
+        /* Control Panel (Right) */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .widget-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .widget-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        /* Segmented Control */
+        .segmented-control {
+            display: flex;
+            background: var(--bg-subtle);
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+            gap: 0.25rem;
+        }
+
+        .segment {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-muted);
+        }
+
+        .segment.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Typography & Content */
+        .description-box {
+            font-size: 1.125rem;
+            font-weight: 500;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .translation-subtext {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .translation-subtext::before {
+            content: "Translation";
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background: white;
+            padding: 0 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .vocab-item {
+            padding: 1rem;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .vocab-item:hover {
+            border-color: var(--primary);
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .word-en {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .word-tl {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* --- Footer --- */
+        .app-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* --- Loading State --- */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pulse-loader {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(99, 102, 241, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+
+        /* State Classes */
+        .show-app #landing-view {
+            display: none;
+        }
+
+        .show-app #app-view {
+            display: block;
+        }
+
+        .is-analyzed #upload-zone {
+            display: none;
+        }
+
+        .is-analyzed #result-stage {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body id="body-context">
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="logo" onclick="toggleView('landing')">
+                <div class="logo-box">L</div>
+                LexiLens
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link">Features</a>
+                <a href="#" class="nav-link">Pricing</a>
+                <a href="#" class="nav-link" onclick="toggleView('app')">My Learning</a>
+            </div>
+            <div class="auth">
+                <button class="btn btn-ghost">Login</button>
+                <button class="btn btn-primary" onclick="toggleView('app')">Start Learning</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page View -->
+    <section id="landing-view">
+        <div class="hero">
+            <div class="container">
+                <h1>Master English Through <span>Visual Context</span></h1>
+                <p>LexiLens uses advanced AI to transform any image into a personalized English lesson. See the world,
+                    learn the language.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn btn-primary" onclick="toggleView('app')">Experience LexiLens</button>
+                    <button class="btn btn-white">Watch Video</button>
+                </div>
+
+                <div class="hero-preview">
+                    <div class="preview-card">
+                        <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop"
+                            class="preview-img" alt="Experience Preview">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main App UI View -->
+    <section id="app-view">
+        <div class="container">
+            <div class="app-layout">
+                <!-- Media Column -->
+                <div class="media-column">
+                    <div id="upload-zone" class="upload-zone" onclick="simulateAnalysis()">
+                        <div class="upload-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                        </div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Begin Your Session</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem;">Upload a photo or drag & drop to
+                            analyze</p>
+                        <button class="btn btn-white">Browse Desktop</button>
+                    </div>
+
+                    <div id="result-stage" class="result-stage">
+                        <div class="main-image-card">
+                            <img src="https://images.unsplash.com/photo-1510511459019-5dee997dd1db?q=80&w=1974&auto=format&fit=crop"
+                                alt="The analyzed image">
+                        </div>
+                        <div class="app-actions">
+                            <button class="btn btn-white" style="flex: 1;" onclick="resetApp()">Analyze New
+                                Image</button>
+                            <button class="btn btn-primary" style="flex: 2;"
+                                onclick="alert('Stored in Neon Database!')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Save to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Column -->
+                <div class="control-panel">
+                    <div class="widget">
+                        <div class="widget-head">
+                            <div class="widget-title">English Insight</div>
+                            <div class="segmented-control">
+                                <div class="segment">A1</div>
+                                <div class="segment active">B2</div>
+                                <div class="segment">C1</div>
+                            </div>
+                        </div>
+                        <div class="description-box">
+                            A focused workstation setup in a bright, modern room. The natural morning light illuminates
+                            a high-performance laptop and a fresh cup of coffee, indicating a productive start to the
+                            day.
+                        </div>
+                        <div class="translation-subtext">
+                            明るくモダンな部屋にある、集中できるワークステーションのセットアップ。朝の自然な光が高性能のノートパソコンと淹れたてのコーヒーを照らし、一日の生産的な始まりを予感させます。
+                        </div>
+                    </div>
+
+                    <div class="widget">
+                        <div class="widget-head">
+                            <div class="widget-title">Core Vocabulary</div>
+                            <div class="segmented-control">
+                                <div class="segment active">JP</div>
+                                <div class="segment">CN</div>
+                                <div class="segment">KR</div>
+                            </div>
+                        </div>
+                        <div class="vocab-grid">
+                            <div class="vocab-item">
+                                <div class="word-en">Illumination</div>
+                                <div class="word-tl">照明 / 照らすこと</div>
+                            </div>
+                            <div class="vocab-item">
+                                <div class="word-en">Workstation</div>
+                                <div class="word-tl">ワークステーション</div>
+                            </div>
+                            <div class="vocab-item">
+                                <div class="word-en">Productive</div>
+                                <div class="word-tl">生産的</div>
+                            </div>
+                            <div class="vocab-item">
+                                <div class="word-en">Atmosphere</div>
+                                <div class="word-tl">雰囲気</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="loading-overlay">
+        <div class="pulse-loader">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+            </svg>
+        </div>
+        <p style="margin-top: 1.5rem; font-weight: 700; color: var(--primary);">GLM-4.6V Analysis in Progress...</p>
+    </div>
+
+    <script>
+        function toggleView(view) {
+            const body = document.getElementById('body-context');
+            if (view === 'app') {
+                body.classList.add('show-app');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                body.classList.remove('show-app');
+            }
+        }
+
+        function simulateAnalysis() {
+            document.getElementById('loader').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('body-context').classList.add('is-analyzed');
+            }, 2000);
+        }
+
+        function resetApp() {
+            document.getElementById('body-context').classList.remove('is-analyzed');
+        }
+    </script>
+</body>
+
+</html>

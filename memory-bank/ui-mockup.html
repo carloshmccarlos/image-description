@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLens — Intelligent English Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --primary: #1e293b;
+            --accent: #6366f1;
+            --text-main: #0f172a;
+            --text-secondary: #64748b;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav - Minimalist */
+        nav {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .logo-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-trigger {
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .auth-trigger:hover {
+            opacity: 0.9;
+        }
+
+        /* Layout */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+        }
+
+        /* Upload Area */
+        .dropzone {
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 6rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropzone:hover {
+            border-color: var(--accent);
+            background: #f1f5f9;
+        }
+
+        .dropzone-icon {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        /* Result View */
+        .stage {
+            display: none;
+            gap: 3rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .media-container {
+            flex: 1.2;
+        }
+
+        .image-outer {
+            padding: 0.75rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .image-card {
+            border-radius: calc(var(--radius-lg) - 8px);
+            overflow: hidden;
+            aspect-ratio: 4/5;
+            background: #f1f5f9;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Content */
+        .content-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .section-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* UI Elements */
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: 8px;
+            gap: 0.25rem;
+        }
+
+        .tab {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--text-main);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .description-content {
+            font-size: 1.125rem;
+            font-weight: 500;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .translation-content {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .vocab-item {
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .vocab-item:hover {
+            border-color: var(--border);
+            background: white;
+        }
+
+        .vocab-word {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .vocab-tl {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-top: 2px;
+        }
+
+        /* Buttons */
+        .footer-btns {
+            margin-top: auto;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.875rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Loading */
+        #loading-view {
+            display: none;
+            text-align: center;
+            padding: 5rem;
+        }
+
+        .dot-loader {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .dot {
+            width: 8px;
+            light mode height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* State Manager */
+        .is-results #initial-view {
+            display: none;
+        }
+
+        .is-results #results-view {
+            display: flex;
+        }
+
+        .is-loading #initial-view {
+            display: none;
+        }
+
+        .is-loading #loading-view {
+            display: block;
+        }
+    </style>
+</head>
+
+<body id="app-root">
+
+    <nav>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            LexiLens
+        </div>
+        <div class="nav-actions">
+            <span>Library</span>
+            <span>Dashboard</span>
+            <div class="auth-trigger">Launch App</div>
+        </div>
+    </nav>
+
+    <main>
+        <div id="initial-view">
+            <header>
+                <h1>See it. Learn it.</h1>
+                <p>Upload any picture to generate a custom English lesson.</p>
+            </header>
+
+            <div class="dropzone" onclick="startLoading()">
+                <div class="dropzone-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <p style="font-weight: 600; font-size: 1.1rem;">Drop an image here</p>
+                <p style="color: var(--text-secondary); margin-top: 0.5rem">Or click to browse files</p>
+            </div>
+        </div>
+
+        <div id="loading-view">
+            <div class="dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <p style="font-weight: 500; color: var(--text-secondary)">SiliconFlow GLM-4.6V is analyzing...</p>
+        </div>
+
+        <div id="results-view" class="stage">
+            <div class="media-container">
+                <div class="image-outer">
+                    <div class="image-card">
+                        <img src="https://images.unsplash.com/photo-1510511459019-5dee997dd1db?q=80&w=1974&auto=format&fit=crop"
+                            alt="Workspace">
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-column">
+                <div class="section-card">
+                    <div class="section-label">
+                        Story Context
+                        <div class="tabs">
+                            <div class="tab">A1</div>
+                            <div class="tab active">B1</div>
+                            <div class="tab">C1</div>
+                        </div>
+                    </div>
+                    <div class="description-content">
+                        A peaceful morning scene showing a minimalist wooden workspace. Natural light streams across a
+                        laptop and a steaming cup of coffee, creating a perfect atmosphere for focus.
+                    </div>
+                    <div class="translation-content">
+                        ミニマリストな木製のワークスペースが映し出された、穏やかな朝の風景。ノートパソコンと湯気が立つコーヒーカップに自然光が差し込み、集中するのに最適な雰囲気を作り出しています。
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-label">
+                        Key Vocabulary
+                        <div class="tabs">
+                            <div class="tab active">JP</div>
+                            <div class="tab">CN</div>
+                            <div class="tab">KR</div>
+                        </div>
+                    </div>
+                    <div class="vocab-grid">
+                        <div class="vocab-item">
+                            <div class="vocab-word">Atmosphere</div>
+                            <div class="vocab-tl">雰囲気</div>
+                        </div>
+                        <div class="vocab-item">
+                            <div class="vocab-word">Minimalist</div>
+                            <div class="vocab-tl">ミニマリスト</div>
+                        </div>
+                        <div class="vocab-item">
+                            <div class="vocab-word">Wooden</div>
+                            <div class="vocab-tl">木製</div>
+                        </div>
+                        <div class="vocab-item">
+                            <div class="vocab-word">Steaming</div>
+                            <div class="vocab-tl">湯気が立つ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-btns">
+                    <button class="btn btn-secondary" onclick="location.reload()">Reset</button>
+                    <button class="btn btn-primary" onclick="alert('Saved to Neon DB')">Save to Profile</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function startLoading() {
+            const root = document.getElementById('app-root');
+            root.className = 'is-loading';
+            setTimeout(() => {
+                root.className = 'is-results';
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>
