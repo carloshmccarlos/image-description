@@ -41,16 +41,24 @@ CREATE TABLE lessons (
 
 ## Key Architecture Decisions
 
-### 1. API Route for Analysis (Prevents HTTP2 Errors)
-The original implementation called `analyzeImage` server action directly from the results page. This caused `ERR_HTTP2_PROTOCOL_ERROR` on Vercel because:
-- Server actions have response size limits
-- Long-running AI calls can timeout during SSR
-- Large base64 images in the response payload
+### 1. SSE Streaming for Analysis (Prevents Vercel Timeout)
+The original implementation caused 504 Gateway Timeout on Vercel Free tier (10s limit). 
 
-**Solution**: Created `/api/analyze` route that:
-- Handles AI analysis separately from page render
-- Returns only the lesson ID (small payload)
-- Client navigates to results page after completion
+**Solution**: `/api/analyze` uses Server-Sent Events (SSE) streaming:
+- Keeps HTTP connection alive during long AI processing
+- Sends heartbeat messages to prevent timeout
+- Client reads stream and waits for completion
+- Works within Vercel's timeout constraints
+
+```
+Client                    Server
+  |-- POST /api/analyze -->|
+  |<-- data: {"status":"starting"} --|
+  |<-- data: {"status":"analyzing"} --|
+  |       (AI processing...)         |
+  |<-- data: {"status":"complete","lessonId":"..."} --|
+  |-- Navigate to /results?id=... -->|
+```
 
 ### 2. Client-Side Image Compression
 Images are compressed to 500KB max before upload to:
