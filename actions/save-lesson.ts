@@ -1,16 +1,9 @@
 'use server'
 
-import { db, lessons, users } from '@/db'
+import { db, lessons } from '@/db'
 import { auth } from '@clerk/nextjs/server'
 import { eq } from 'drizzle-orm'
-import { promoteImageToSaved } from './upload'
-
-interface LessonData {
-    imageUrl: string
-    description: { target: string; native: string }
-    vocabulary: any
-    difficulty: string
-}
+import { promoteImageToSaved, deleteImage } from './upload'
 
 export async function saveLesson(lessonId: string) {
     const { userId } = await auth()
@@ -59,6 +52,21 @@ export async function deleteLesson(lessonId: string) {
     }
 
     try {
+        const lesson = await db.query.lessons.findFirst({
+            where: eq(lessons.id, lessonId)
+        })
+
+        if (!lesson) {
+            throw new Error('Lesson not found')
+        }
+
+        if (lesson.userId !== userId) {
+            throw new Error('Unauthorized')
+        }
+
+        // Remove the lesson image from R2 so we do not leak storage
+        await deleteImage(lesson.imageUrl)
+
         await db.delete(lessons)
             .where(eq(lessons.id, lessonId))
 

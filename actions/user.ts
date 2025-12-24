@@ -55,13 +55,28 @@ export async function getUserPreferences() {
         where: eq(users.id, userId)
     })
 
-    return user ? {
-        nativeLanguage: user.nativeLanguage,
-        targetLanguage: user.targetLanguage,
-        difficulty: user.difficulty
-    } : {
+    if (user) {
+        return {
+            nativeLanguage: user.nativeLanguage,
+            targetLanguage: user.targetLanguage,
+            difficulty: user.difficulty
+        }
+    }
+
+    // If the user has never saved preferences, create a baseline row so FK constraints succeed
+    const current = await currentUser()
+    const defaults = {
         nativeLanguage: 'zh',
         targetLanguage: 'en',
         difficulty: 'Beginner'
     }
+
+    await db.insert(users).values({
+        id: userId,
+        email: current?.emailAddresses[0]?.emailAddress,
+        imageUrl: current?.imageUrl,
+        ...defaults
+    }).onConflictDoNothing()
+
+    return defaults
 }

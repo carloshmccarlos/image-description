@@ -1,29 +1,32 @@
 import Link from 'next/link'
+import { getI18n } from '@/lib/i18n/server'
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const { messages } = await getI18n()
+  const hero = messages.landing
+
   return (
     <div className='flex flex-col items-center'>
       <section className='py-20 px-6 text-center max-w-5xl mx-auto'>
         <div className='inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase bg-primary/10 text-primary rounded-full'>
-          AI-Powered Visual Learning
+          {hero.heroBadge}
         </div>
         <h1 className='text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1] text-slate-900'>
-          Master Any Language <br />
-          <span className='text-primary'>Visual Context</span>
+          {hero.heroTitle} <br />
+          <span className='text-primary'>{hero.heroHighlight}</span>
         </h1>
         <p className='text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed'>
-          LexiLens uses advanced AI to transform any image into a personalized language lesson.
-          Upload a photo, explore vocabulary, and master descriptions in your target language.
+          {hero.heroDescription}
         </p>
         <div className='flex flex-wrap gap-4 justify-center'>
           <Link
             href='/analyze'
             className='bg-primary text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95'
           >
-            Get Started Free
+            {hero.primaryCta}
           </Link>
           <button className='bg-white border border-slate-200 text-slate-900 px-10 py-4 rounded-full text-lg font-bold hover:bg-slate-50 transition-all'>
-            How it Works
+            {hero.secondaryCta}
           </button>
         </div>
       </section>
@@ -34,7 +37,7 @@ export default function LandingPage() {
           <div className='relative bg-white rounded-[2rem] p-3 shadow-2xl border border-slate-100 overflow-hidden'>
             <img
               src='https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop'
-              alt='Hero Preview'
+              alt='Learner exploring AI powered image descriptions'
               className='w-full rounded-[1.5rem]'
             />
           </div>
@@ -43,21 +46,14 @@ export default function LandingPage() {
 
       <section className='w-full bg-slate-50 py-24'>
         <div className='max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-12'>
-          <FeatureCard
-            icon='📸'
-            title='Visual Context'
-            description='Learn words as they appear in the real world, making them easier to remember.'
-          />
-          <FeatureCard
-            icon='🤖'
-            title='AI Descriptions'
-            description='Get natural-sounding descriptions at various difficulty levels (A1 to C1).'
-          />
-          <FeatureCard
-            icon='🌍'
-            title='Dynamic Translation'
-            description='Learn in your native language with instant bridges to your target language.'
-          />
+          {hero.features.map((feature) => (
+            <FeatureCard
+              key={feature.title}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+            />
+          ))}
         </div>
       </section>
     </div>

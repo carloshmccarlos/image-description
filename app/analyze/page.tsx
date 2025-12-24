@@ -1,16 +1,19 @@
 import { UploadZone } from '@/components/UploadZone'
 import { getUserPreferences } from '@/actions/user'
-import { redirect } from 'next/navigation'
+import { getI18n } from '@/lib/i18n/server'
 
 export default async function AnalyzePage() {
-    const prefs = await getUserPreferences()
+    const [prefs, { messages }] = await Promise.all([
+        getUserPreferences(),
+        getI18n()
+    ])
 
     return (
         <div className='bg-slate-50 min-h-screen py-16 px-6'>
             <div className='max-w-4xl mx-auto'>
                 <div className='mb-12 text-center'>
-                    <h1 className='text-4xl font-extrabold text-slate-900 mb-4'>New Learning Session</h1>
-                    <p className='text-lg text-slate-600'>Upload an image to start extracting vocabulary and descriptions.</p>
+                    <h1 className='text-4xl font-extrabold text-slate-900 mb-4'>{messages.analyzePage.title}</h1>
+                    <p className='text-lg text-slate-600'>{messages.analyzePage.subtitle}</p>
                 </div>
 
                 <UploadZone initialPrefs={prefs ? {
@@ -23,16 +26,16 @@ export default async function AnalyzePage() {
                     <div className='bg-white p-8 rounded-3xl border border-slate-200 shadow-sm'>
                         <h3 className='font-bold text-xl mb-4 flex items-center gap-2'>
                             <span className='w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm'>1</span>
-                            Upload
+                            {messages.analyzePage.steps.uploadTitle}
                         </h3>
-                        <p className='text-slate-600'>Choose any high-quality photo with identifiable objects or scenes.</p>
+                        <p className='text-slate-600'>{messages.analyzePage.steps.uploadDesc}</p>
                     </div>
                     <div className='bg-white p-8 rounded-3xl border border-slate-200 shadow-sm'>
                         <h3 className='font-bold text-xl mb-4 flex items-center gap-2'>
                             <span className='w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm'>2</span>
-                            Analyze
+                            {messages.analyzePage.steps.analyzeTitle}
                         </h3>
-                        <p className='text-slate-600'>Our AI identifies key vocabulary and provides natural English insights.</p>
+                        <p className='text-slate-600'>{messages.analyzePage.steps.analyzeDesc}</p>
                     </div>
                 </div>
             </div>
