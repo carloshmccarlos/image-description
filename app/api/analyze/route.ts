@@ -4,7 +4,7 @@ import { db, lessons } from '@/db'
 import { eq, and } from 'drizzle-orm'
 import OpenAI from 'openai'
 
-// Vercel Pro/Enterprise: up to 60s, Free/Hobby: 10s max
+// Vercel timeout: Free=10s, Pro=60s, Enterprise=900s
 export const maxDuration = 60
 
 // Lazy-initialize OpenAI client
@@ -24,7 +24,7 @@ function getClient () {
  */
 async function fetchImageAsBase64 (imageUrl: string) {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
     const response = await fetch(imageUrl, {
@@ -101,8 +101,8 @@ function parseAIResponse (content: string) {
 }
 
 /**
- * API route for image analysis using streaming to prevent timeout
- * Uses ReadableStream to keep connection alive during long AI processing
+ * Simple JSON API route for image analysis
+ * Returns lessonId directly - no streaming
  */
 export async function POST (request: NextRequest) {
   const { userId } = await auth()
@@ -111,92 +111,71 @@ export async function POST (request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await request.json()
-  const { imageUrl, targetLanguage = 'en', nativeLanguage = 'zh', difficulty = 'Beginner' } = body
+  try {
+    const body = await request.json()
+    const { imageUrl, targetLanguage = 'en', nativeLanguage = 'zh', difficulty = 'Beginner' } = body
 
-  if (!imageUrl) {
-    return NextResponse.json({ error: 'Missing imageUrl' }, { status: 400 })
-  }
+    if (!imageUrl) {
+      return NextResponse.json({ error: 'Missing imageUrl' }, { status: 400 })
+    }
 
-  // Check cache first
-  const existingLesson = await db.query.lessons.findFirst({
-    where: and(eq(lessons.imageUrl, imageUrl), eq(lessons.userId, userId))
-  })
+    // Check cache first - return existing lesson if found
+    const existingLesson = await db.query.lessons.findFirst({
+      where: and(eq(lessons.imageUrl, imageUrl), eq(lessons.userId, userId))
+    })
 
-  if (existingLesson) {
-    return NextResponse.json({ lessonId: existingLesson.id, cached: true })
-  }
+    if (existingLesson) {
+      return NextResponse.json({ lessonId: existingLesson.id, cached: true })
+    }
 
-  // Use streaming response to prevent Vercel timeout
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream({
-    async start (controller) {
-      try {
-        // Send initial heartbeat
-        controller.enqueue(encoder.encode('data: {"status":"starting"}\n\n'))
+    // Fetch and encode image
+    const encodedImage = await fetchImageAsBase64(imageUrl)
 
-        // Fetch and encode image
-        const encodedImage = await fetchImageAsBase64(imageUrl)
-        controller.enqueue(encoder.encode('data: {"status":"analyzing"}\n\n'))
-
-        // Call AI with streaming disabled for simpler parsing
-        const response = await getClient().chat.completions.create({
-          model: 'zai-org/GLM-4.6V',
-          messages: [
+    // Call AI
+    const response = await getClient().chat.completions.create({
+      model: 'zai-org/GLM-4.6V',
+      messages: [
+        {
+          role: 'system',
+          content: buildPrompt(targetLanguage, nativeLanguage, difficulty)
+        },
+        {
+          role: 'user',
+          content: [
             {
-              role: 'system',
-              content: buildPrompt(targetLanguage, nativeLanguage, difficulty)
+              type: 'text',
+              text: `Analyze this image for a ${difficulty} level student learning ${targetLanguage} whose native language is ${nativeLanguage}.`
             },
             {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Analyze this image for a ${difficulty} level student learning ${targetLanguage} whose native language is ${nativeLanguage}.`
-                },
-                {
-                  type: 'image_url',
-                  image_url: { url: encodedImage }
-                }
-              ]
+              type: 'image_url',
+              image_url: { url: encodedImage }
             }
           ]
-        })
-
-        const content = response.choices[0].message.content
-        if (!content) {
-          throw new Error('Empty response from AI')
         }
+      ]
+    })
 
-        const data = parseAIResponse(content)
-
-        // Save to database
-        const [newLesson] = await db.insert(lessons).values({
-          userId,
-          imageUrl,
-          description: data.description,
-          vocabulary: data.vocabulary,
-          difficulty,
-          isSaved: false
-        }).returning()
-
-        // Send final result
-        controller.enqueue(encoder.encode(`data: {"status":"complete","lessonId":"${newLesson.id}"}\n\n`))
-        controller.close()
-      } catch (error) {
-        console.error('[API/analyze] Error:', error)
-        const message = error instanceof Error ? error.message : 'Analysis failed'
-        controller.enqueue(encoder.encode(`data: {"status":"error","error":"${message}"}\n\n`))
-        controller.close()
-      }
+    const content = response.choices[0].message.content
+    if (!content) {
+      throw new Error('Empty response from AI')
     }
-  })
 
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    }
-  })
+    const data = parseAIResponse(content)
+
+    // Save to database
+    const [newLesson] = await db.insert(lessons).values({
+      userId,
+      imageUrl,
+      description: data.description,
+      vocabulary: data.vocabulary,
+      difficulty,
+      isSaved: false
+    }).returning()
+
+    return NextResponse.json({ lessonId: newLesson.id, cached: false })
+  } catch (error) {
+    console.error('[API/analyze] Error:', error)
+    const message = error instanceof Error ? error.message : 'Analysis failed'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

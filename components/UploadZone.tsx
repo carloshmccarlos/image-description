@@ -66,10 +66,10 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
   }
 
   /**
-   * Optimized analysis flow with SSE streaming to prevent Vercel timeout:
+   * Analysis flow:
    * 1. Compress image client-side
    * 2. Upload to R2
-   * 3. Call API route with SSE streaming (keeps connection alive)
+   * 3. Call API route for AI analysis
    * 4. Navigate to results page with lesson ID
    */
   const handleAnalyze = async () => {
@@ -88,7 +88,7 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
       formData.append('file', compressedFile)
       const { url } = await uploadToR2(formData)
 
-      // Step 3: Call API with SSE streaming to prevent timeout
+      // Step 3: Call API for analysis
       setStatus('analyzing')
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -101,46 +101,18 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
         })
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        throw new Error('Analysis request failed')
+        throw new Error(result.error || 'Analysis failed')
       }
 
-      // Handle SSE stream response
-      const reader = response.body?.getReader()
-      if (!reader) {
-        throw new Error('No response stream')
-      }
-
-      const decoder = new TextDecoder()
-      let lessonId: string | null = null
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const text = decoder.decode(value)
-        const lines = text.split('\n').filter(line => line.startsWith('data: '))
-
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line.slice(6))
-            if (data.status === 'complete' && data.lessonId) {
-              lessonId = data.lessonId
-            } else if (data.status === 'error') {
-              throw new Error(data.error || 'Analysis failed')
-            }
-          } catch {
-            // Skip malformed JSON lines
-          }
-        }
-      }
-
-      if (!lessonId) {
+      if (!result.lessonId) {
         throw new Error('No lesson ID received')
       }
 
       // Step 4: Navigate to results
-      router.push(`/results?id=${lessonId}`)
+      router.push(`/results?id=${result.lessonId}`)
     } catch (error) {
       console.error('Process failed:', error)
       const msg = error instanceof Error ? error.message : messages.upload.errorMessage
