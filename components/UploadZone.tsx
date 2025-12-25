@@ -66,12 +66,11 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
   }
 
   /**
-   * Analysis flow with polling:
+   * Analysis flow with SSE streaming:
    * 1. Compress image client-side
    * 2. Upload to R2
-   * 3. Start analysis job (returns immediately)
-   * 4. Poll for completion
-   * 5. Navigate to results
+   * 3. Start analysis with SSE stream (keeps connection alive)
+   * 4. Navigate to results when complete
    */
   const handleAnalyze = async () => {
     if (!file) return
@@ -89,9 +88,9 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
       formData.append('file', compressedFile)
       const { url } = await uploadToR2(formData)
 
-      // Step 3: Start analysis job
+      // Step 3: Start SSE stream for analysis
       setStatus('analyzing')
-      const startRes = await fetch('/api/analyze', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,42 +101,54 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
         })
       })
 
-      const startData = await startRes.json()
-
-      if (!startRes.ok) {
-        throw new Error(startData.error || 'Failed to start analysis')
+      // Check if it's a direct JSON response (cached result)
+      const contentType = response.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        const data = await response.json()
+        if (data.status === 'completed' && data.lessonId) {
+          router.push(`/results?id=${data.lessonId}`)
+          return
+        }
+        if (data.error) {
+          throw new Error(data.error)
+        }
       }
 
-      // If already completed (cached), go directly to results
-      if (startData.status === 'completed') {
-        router.push(`/results?id=${startData.lessonId}`)
+      // Handle SSE stream
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('No response stream')
+
+      const decoder = new TextDecoder()
+      let lessonId: string | null = null
+      let lastError: string | null = null
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const text = decoder.decode(value)
+        const lines = text.split('\n').filter(line => line.startsWith('data: '))
+
+        for (const line of lines) {
+          try {
+            const data = JSON.parse(line.slice(6))
+            if (data.status === 'completed' && data.lessonId) {
+              lessonId = data.lessonId
+            } else if (data.status === 'error') {
+              lastError = data.error
+            }
+          } catch {
+            // Skip malformed lines
+          }
+        }
+      }
+
+      if (lessonId) {
+        router.push(`/results?id=${lessonId}`)
         return
       }
 
-      // Step 4: Poll for completion
-      const lessonId = startData.lessonId
-      let attempts = 0
-      const maxAttempts = 60 // 2 minutes max (2s intervals)
-
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2s
-
-        const statusRes = await fetch(`/api/analyze/status?lessonId=${lessonId}`)
-        const statusData = await statusRes.json()
-
-        if (statusData.status === 'completed') {
-          router.push(`/results?id=${lessonId}`)
-          return
-        }
-
-        if (statusData.status === 'failed') {
-          throw new Error(statusData.error || 'Analysis failed')
-        }
-
-        attempts++
-      }
-
-      throw new Error('Analysis timed out. Please try again.')
+      throw new Error(lastError || 'Analysis failed - no result received')
     } catch (error) {
       console.error('Process failed:', error)
       const msg = error instanceof Error ? error.message : messages.upload.errorMessage
