@@ -162,7 +162,7 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
       case 'compressing':
         return { title: messages.upload.compressingTitle, subtitle: messages.upload.compressingSubtitle }
       case 'uploading':
-        return { title: messages.upload.analyzingTitle, subtitle: 'Uploading image...' }
+        return { title: messages.upload.uploadingTitle, subtitle: messages.upload.uploadingSubtitle }
       case 'analyzing':
         return { title: messages.upload.analyzingTitle, subtitle: messages.upload.analyzingSubtitle }
       default:

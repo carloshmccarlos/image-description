@@ -45,6 +45,8 @@ export type Messages = {
     browseCta: string
     compressingTitle: string
     compressingSubtitle: string
+    uploadingTitle: string
+    uploadingSubtitle: string
     analyzingTitle: string
     analyzingSubtitle: string
     languageHeading: string
@@ -123,8 +125,10 @@ const dictionaries: Record<Locale, Messages> = {
       browseCta: 'Browse Files',
       compressingTitle: 'Optimizing Image...',
       compressingSubtitle: 'Reducing file size for faster AI analysis',
+      uploadingTitle: 'Uploading...',
+      uploadingSubtitle: 'Uploading to secure storage',
       analyzingTitle: 'Analyzing Scene...',
-      analyzingSubtitle: 'Uploading to secure storage',
+      analyzingSubtitle: 'AI is processing your image',
       languageHeading: 'Language Pairing',
       targetLabel: 'Target Language',
       targetHint: 'What you want to learn',
@@ -204,8 +208,10 @@ const dictionaries: Record<Locale, Messages> = {
       browseCta: '浏览文件',
       compressingTitle: '正在优化图片…',
       compressingSubtitle: '压缩体积以更快完成分析',
+      uploadingTitle: '正在上传…',
+      uploadingSubtitle: '正在上传到安全存储',
       analyzingTitle: '正在分析场景…',
-      analyzingSubtitle: '正在上传到安全存储',
+      analyzingSubtitle: 'AI 正在处理您的图片',
       languageHeading: '语言配置',
       targetLabel: '目标语言',
       targetHint: '你想学习的语言',
@@ -285,8 +291,10 @@ const dictionaries: Record<Locale, Messages> = {
       browseCta: 'ファイルを選択',
       compressingTitle: '画像を最適化中…',
       compressingSubtitle: '高速解析のために圧縮しています',
+      uploadingTitle: 'アップロード中…',
+      uploadingSubtitle: '安全なストレージへアップロード中',
       analyzingTitle: 'シーンを解析中…',
-      analyzingSubtitle: '安全なストレージへアップロード中',
+      analyzingSubtitle: 'AIが画像を処理しています',
       languageHeading: '言語設定',
       targetLabel: '学習言語',
       targetHint: '学びたい言語',
@@ -366,8 +374,10 @@ const dictionaries: Record<Locale, Messages> = {
       browseCta: '파일 찾아보기',
       compressingTitle: '이미지 최적화 중…',
       compressingSubtitle: '더 빠른 분석을 위해 용량을 줄이는 중입니다',
+      uploadingTitle: '업로드 중…',
+      uploadingSubtitle: '보안 저장소로 업로드하는 중입니다',
       analyzingTitle: '장면 분석 중…',
-      analyzingSubtitle: '보안 저장소로 업로드하는 중입니다',
+      analyzingSubtitle: 'AI가 이미지를 처리하고 있습니다',
       languageHeading: '언어 설정',
       targetLabel: '학습 언어',
       targetHint: '배우고 싶은 언어',
