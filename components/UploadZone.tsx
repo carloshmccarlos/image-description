@@ -66,11 +66,12 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
   }
 
   /**
-   * Analysis flow:
+   * Analysis flow with polling:
    * 1. Compress image client-side
    * 2. Upload to R2
-   * 3. Call API route for AI analysis
-   * 4. Navigate to results page with lesson ID
+   * 3. Start analysis job (returns immediately)
+   * 4. Poll for completion
+   * 5. Navigate to results
    */
   const handleAnalyze = async () => {
     if (!file) return
@@ -88,9 +89,9 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
       formData.append('file', compressedFile)
       const { url } = await uploadToR2(formData)
 
-      // Step 3: Call API for analysis
+      // Step 3: Start analysis job
       setStatus('analyzing')
-      const response = await fetch('/api/analyze', {
+      const startRes = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,18 +102,42 @@ export function UploadZone ({ initialPrefs }: UploadZoneProps) {
         })
       })
 
-      const result = await response.json()
+      const startData = await startRes.json()
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Analysis failed')
+      if (!startRes.ok) {
+        throw new Error(startData.error || 'Failed to start analysis')
       }
 
-      if (!result.lessonId) {
-        throw new Error('No lesson ID received')
+      // If already completed (cached), go directly to results
+      if (startData.status === 'completed') {
+        router.push(`/results?id=${startData.lessonId}`)
+        return
       }
 
-      // Step 4: Navigate to results
-      router.push(`/results?id=${result.lessonId}`)
+      // Step 4: Poll for completion
+      const lessonId = startData.lessonId
+      let attempts = 0
+      const maxAttempts = 60 // 2 minutes max (2s intervals)
+
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2s
+
+        const statusRes = await fetch(`/api/analyze/status?lessonId=${lessonId}`)
+        const statusData = await statusRes.json()
+
+        if (statusData.status === 'completed') {
+          router.push(`/results?id=${lessonId}`)
+          return
+        }
+
+        if (statusData.status === 'failed') {
+          throw new Error(statusData.error || 'Analysis failed')
+        }
+
+        attempts++
+      }
+
+      throw new Error('Analysis timed out. Please try again.')
     } catch (error) {
       console.error('Process failed:', error)
       const msg = error instanceof Error ? error.message : messages.upload.errorMessage
